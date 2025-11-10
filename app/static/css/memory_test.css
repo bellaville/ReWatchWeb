@@ -1,0 +1,73 @@
+/* frame container for shapes */
+#shapes-frame {
+    width: 400px;
+    height: 300px;
+    border: 3px solid #333;
+    margin: 20px auto;
+    position: relative; /* allows absolute positioning inside */
+    background-color: #f9f9f9;
+    border-radius: 10px;
+}
+
+/* shapes inside the frame */
+.shape {
+    width: 50px;
+    height: 50px;
+    position: absolute; /* allows positioning anywhere inside frame */
+    /* default colors and styles removed to be defined per shape type */
+}
+
+/* circle */
+.shape.circle {
+    border-radius: 50%;
+    background-color: #3498db;
+}
+
+/* square */
+.shape.square {
+    background-color: #e74c3c;
+}
+
+/* triangle */
+.shape.triangle {
+    width: 0;
+    height: 0;
+    border-left: 25px solid transparent;
+    border-right: 25px solid transparent;
+    border-bottom: 50px solid #2ecc71;
+    background-color: transparent;
+}
+
+/* star */
+.shape.star {
+    width: 50px;
+    height: 50px;
+    background-color: gold;
+    clip-path: polygon(
+        50% 0%, 61% 35%, 98% 35%, 68% 57%, 
+        79% 91%, 50% 70%, 21% 91%, 32% 57%, 
+        2% 35%, 39% 35%
+    );
+}
+
+.hidden {
+    display: none;
+}
+.visible {
+    display: block;
+}
+
+/* buttons container */
+form {
+    display: flex;
+    justify-content: center; /* center buttons horizontally */
+    gap: 20px; /* spacing between buttons */
+    margin-top: 20px;
+}
+
+/* same/different buttons */
+form button {
+    font-size: 1rem;   /* bigger text */
+    padding: 15px 30px;  /* bigger clickable area */
+    border-radius: 10px; 
+}

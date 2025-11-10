@@ -1,0 +1,14 @@
+# Virtual environment
+venv/
+env/
+
+# IDE files
+.vscode/
+*.swp
+
+# System files
+.DS_Store
+
+# Flask/SQLAlchemy database
+*.db
+instance/
