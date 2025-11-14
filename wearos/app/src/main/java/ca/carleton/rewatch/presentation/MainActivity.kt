@@ -1,72 +1,91 @@
-/* While this template provides a good starting point for using Wear Compose, you can always
- * take a look at https://github.com/android/wear-os-samples/tree/main/ComposeStarter to find the
- * most up to date changes to the libraries and their usages.
- */
-
 package ca.carleton.rewatch.presentation
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.health.connect.HealthConnectException
 import android.os.Bundle
+import android.widget.TextView
+import android.widget.ToggleButton
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.wear.compose.material.MaterialTheme
-import androidx.wear.compose.material.Text
-import androidx.wear.compose.material.TimeText
-import androidx.wear.tooling.preview.devices.WearDevices
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
 import ca.carleton.rewatch.R
-import ca.carleton.rewatch.presentation.theme.RewatchTheme
+
+
+import com.samsung.android.service.health.tracking.*
+import com.samsung.android.service.health.tracking.data.*
 
 class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
+    private var healthTrackingService : HealthTrackingService? = null
+    private var accelTracker : HealthTracker? = null
 
+    private lateinit var status : TextView
+    private lateinit var accelX : TextView
+    private lateinit var accelY : TextView
+    private lateinit var accelZ : TextView
+    private lateinit var toggle : ToggleButton
+
+    private val requestPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) {isGranted: Boolean ->
+        if(isGranted) {
+            println("sensor access granted")
+        }
+    }
+
+    private val connectionListener = object : ConnectionListener {
+        override fun onConnectionSuccess() {
+            println("connected")
+            var availableTrackers : List<HealthTrackerType> = healthTrackingService!!.trackingCapability.supportHealthTrackerTypes
+            if(!availableTrackers.contains(HealthTrackerType.ACCELEROMETER_CONTINUOUS)) {
+                // Accelerometer not available
+                runOnUiThread {
+                    status.text = "Status: Connected"
+                    toggle.isEnabled = true
+                }
+            } else {
+                accelTracker = healthTrackingService!!.getHealthTracker(HealthTrackerType.ACCELEROMETER_CONTINUOUS)
+            }
+        }
+
+        override fun onConnectionEnded() {
+            runOnUiThread {
+                status.text = "Status: Disconnected"
+                toggle.isEnabled = false
+                toggle.text = "Start Tracking"
+            }
+        }
+
+        override fun onConnectionFailed(p0: HealthTrackerException?) {
+            println("connection failed")
+            runOnUiThread {
+                status.text = "Status: Connection Failed"
+                toggle.isEnabled = false
+            }
+        }
+
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        setTheme(android.R.style.Theme_DeviceDefault)
+        setContentView(R.layout.activity_main)
 
-        setContent {
-            WearApp("ReWatch")
+        status = findViewById(R.id.statusText)
+        accelX = findViewById(R.id.accel_x)
+        accelY = findViewById(R.id.accel_y)
+        accelZ = findViewById(R.id.accel_z)
+        toggle = findViewById(R.id.toggle_button)
+        toggle.isEnabled = false
+
+        if(ActivityCompat.checkSelfPermission(applicationContext, Manifest.permission.BODY_SENSORS) == PackageManager.PERMISSION_DENIED) {
+            requestPermissionLauncher.launch(Manifest.permission.BODY_SENSORS)
+        }
+
+        try {
+            healthTrackingService = HealthTrackingService(connectionListener, applicationContext)
+            healthTrackingService!!.connectService()
+        } catch (e: HealthConnectException) {
+            TODO("Add error handling")
         }
     }
-}
 
-@Composable
-fun WearApp(greetingName: String) {
-    RewatchTheme {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colors.background),
-            contentAlignment = Alignment.Center
-        ) {
-            TimeText()
-            Greeting(greetingName = greetingName)
-        }
-    }
-}
-
-@Composable
-fun Greeting(greetingName: String) {
-    Text(
-        modifier = Modifier.fillMaxWidth(),
-        textAlign = TextAlign.Center,
-        color = MaterialTheme.colors.primary,
-        text = stringResource(R.string.hello_world, greetingName)
-    )
-}
-
-@Preview(device = WearDevices.SMALL_ROUND, showSystemUi = true)
-@Composable
-fun DefaultPreview() {
-    WearApp("Welcome to ReWatch")
 }

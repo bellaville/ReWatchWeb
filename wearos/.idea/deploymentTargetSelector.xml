@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-11-13T22:56:54.036275133Z">
+        <DropdownSelection timestamp="2025-11-14T04:41:02.951229331Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="Default" identifier="serial=192.168.2.77:42569;connection=34a88ae3" />
+              <DeviceId pluginId="LocalEmulator" identifier="path=/home/legger/.android/avd/Wear_OS_Small_Round.avd" />
             </handle>
           </Target>
         </DropdownSelection>
